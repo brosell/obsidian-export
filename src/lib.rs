@@ -108,6 +108,7 @@ pub struct Exporter<'a> {
     vault_contents: Option<Vec<PathBuf>>,
     walk_options: WalkOptions<'a>,
     process_embeds_recursively: bool,
+    keep_wiki_links: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -230,6 +231,7 @@ impl<'a> Exporter<'a> {
             walk_options: WalkOptions::default(),
             process_embeds_recursively: true,
             vault_contents: None,
+            keep_wiki_links: false,
         }
     }
 
@@ -255,6 +257,11 @@ impl<'a> Exporter<'a> {
     /// original note, instead of embedding it again a link to the note is inserted instead.
     pub fn process_embeds_recursively(&mut self, recursive: bool) -> &mut Exporter<'a> {
         self.process_embeds_recursively = recursive;
+        self
+    }
+
+    pub fn keep_wiki_links(&mut self, keep:bool) -> &mut Exporter<'a> {
+        self.keep_wiki_links = keep;
         self
     }
 
@@ -567,11 +574,22 @@ impl<'a> Exporter<'a> {
             CowStr::from(""),
         );
 
-        vec![
-            Event::Start(link_tag.clone()),
-            Event::Text(CowStr::from(reference.display())),
-            Event::End(link_tag.clone()),
-        ]
+        eprintln!("reference display: {}, file: {}", reference.display(), reference.file);
+
+        if !self.keep_wiki_links {
+            vec![
+                Event::Start(link_tag.clone()),
+                Event::Text(CowStr::from(reference.display())),
+                Event::End(link_tag.clone()),
+            ]
+        }
+        else {
+            vec![
+                Event::Text(CowStr::from("[[")),
+                Event::Text(CowStr::from(reference.display())),
+                Event::Text(CowStr::from("]]")),
+            ]
+        }
     }
 }
 

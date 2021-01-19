@@ -38,6 +38,10 @@ struct Opts {
 
     #[options(no_short, help = "Don't process embeds recursively", default = "false")]
     no_recursive_embeds: bool,
+
+    #[options(no_short, help = "Keep wiki-links", default = "false")]
+    keep_wiki_links: bool,
+
 }
 
 fn frontmatter_strategy_from_str(input: &str) -> Result<FrontmatterStrategy> {
@@ -63,6 +67,7 @@ fn main() -> Result<()> {
     exporter.frontmatter_strategy(args.frontmatter_strategy);
     exporter.process_embeds_recursively(!args.no_recursive_embeds);
     exporter.walk_options(walk_options);
+    exporter.keep_wiki_links(args.keep_wiki_links);
 
     if let Err(err) = exporter.run() {
         match err {
